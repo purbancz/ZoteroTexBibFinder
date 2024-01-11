@@ -1,0 +1,8 @@
+# Pycharm specific files
+.idea/
+
+# Eenviroment
+venv/
+
+# Files
+res/
