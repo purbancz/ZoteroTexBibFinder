@@ -1,4 +1,5 @@
 import regex
+import re
 
 
 class BibEntries:
@@ -19,7 +20,7 @@ class BibReferences:
         self.suffix = suffix
 
     def __str__(self):
-        return f"[{self.prefix}][{self.suffix}]{{self.key}}"
+        return f"[{self.prefix}][{self.suffix}]{{{self.key}}}"
 
 
 class BibFinder:
@@ -31,7 +32,7 @@ class BibFinder:
         for i in range(len(tex_lines)):
             prev_line = ""
             par = tex_lines[i]
-            matcher = regex.finditer(self.regex, par)
+            matcher = re.finditer(self.regex, par)
             temporary_matcher_end = 0
             matches = [match for match in matcher]
             if not matches:
@@ -41,7 +42,7 @@ class BibFinder:
                     try:
                         prev_line = par[0:match.start() - 1]
                     except Exception as e:
-                        print(f"Something went wrong here: {prev_line}{par}")
+                        print(f"Something went wrong: {e} + {prev_line}{par}")
                     self.tex_bib_lines.append(prev_line)
                     self.tex_bib_lines.append("%" + match.group())
                     try:
@@ -51,7 +52,7 @@ class BibFinder:
                             + self.add_space(par, match.end())
                             + "%")
                     except Exception as e:
-                        print(f"Something went wrong here: {prev_line}")
+                        print(f"Something went wrong: {e} + {prev_line}")
                     temporary_matcher_end = match.end()
                 self.tex_bib_lines.append(par[temporary_matcher_end:len(par)])
         return self.tex_bib_lines
@@ -60,6 +61,10 @@ class BibFinder:
         bib_refs = []
         many_in_one_year = 0
         bib_references_text = bib_entry_raw.split("; ")
+        bib_tex_formula = ""
+        author = ""
+        year = ""
+        bib_ref = None
         if len(bib_references_text) == 1:
             bib_tex_formula = "\\parencite"
         else:
@@ -122,16 +127,14 @@ class BibFinder:
     def de_nullifier(str):
         return str if str else ""
 
+
     @staticmethod
     def add_space(str, index):
-        if index < len(str) and str[index].isspace():
-            return " "
-        else:
-            return ""
+        return " " if index < len(str) and str[index].isalpha() else ""
 
     @staticmethod
     def are_authors(authors1, authors2):
-        return set(authors1) == set(authors2.split(", "))
+        return any(a in authors2.split(", ") for a in authors1)
 
 
 class BibParser:
@@ -152,8 +155,7 @@ class BibParser:
             if line.startswith("author"):
                 key_author = line.split("{", 1)
                 if len(key_author) > 1:
-                    entry.author = key_author[1].rsplit("}", 1)[
-                        0]
+                    entry.author = key_author[1].rsplit("}", 1)[0]
             if line.startswith("title"):
                 key_title = line.split("{", 1)
                 if len(key_title) > 1:
@@ -169,8 +171,7 @@ class BibParser:
                         if line.startswith("editor"):
                             key_author = line.split("{", 1)
                             if len(key_author) > 1:
-                                entry.author = key_author[1].rsplit("}", 1)[
-                                    0]
+                                entry.author = key_author[1].rsplit("}", 1)[0]
                             break
                 if not entry.author:
                     entry.author = entry.title
