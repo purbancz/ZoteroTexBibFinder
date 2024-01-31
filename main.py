@@ -25,8 +25,15 @@ def main(tex_file, bib_file, new_tex_file):
     for entry in bib_entries:
         print(entry)
 
+
+
     saver.rewrite_file(new_tex_file, tex_lines)
 
 
 if __name__ == "__main__":
     create_gui(main)
+    # tex_file = "oleksowicz_org.tex"
+    # new_tex_file = "oleksowicz.tex"
+    # bib_filename = "Oleksowicz.bib"
+    # main(tex_file, bib_filename, new_tex_file)
+
