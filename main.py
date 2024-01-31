@@ -7,11 +7,11 @@ from GUI import create_gui
 def main(tex_file, bib_file, new_tex_file):
 
     parser = TexParser()
-    saver = SaveFile()
     lines_cleaner = DummyLinesCleaner()
     characters_cleaner = DummyCharactersCleaner()
     bib_parser = BibParser()
     bib_finder = BibFinder()
+    saver = SaveFile()
 
     tex_lines = parser.parse_tex_file(tex_file)
     tex_lines = lines_cleaner.clean_dummy_lines(tex_lines)

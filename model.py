@@ -169,8 +169,7 @@ class BibParser:
                         if line.startswith("editor"):
                             key_author = line.split("{", 1)
                             if len(key_author) > 1:
-                                entry.author = key_author[1].rsplit("}", 1)[
-                                    0]
+                                entry.author = key_author[1].rsplit("}", 1)[0]
                             break
                 if not entry.author:
                     entry.author = entry.title
