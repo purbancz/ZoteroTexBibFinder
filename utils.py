@@ -12,3 +12,8 @@ class SaveFile:
         with open(path_to_file, 'w', encoding="utf-8") as file:
             for line in text:
                 file.write(line + '\n')
+
+    @staticmethod
+    def rewrite_file_single_par(path_to_file, text):
+        with open(path_to_file, 'w', encoding="utf-8") as file:
+            file.writelines(text)

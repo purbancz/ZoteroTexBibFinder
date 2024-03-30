@@ -70,8 +70,48 @@ class DummyCharactersCleaner:
             text = regex.sub(regex_pattern, "\\2\\1", text, count=1)
         return text
 
-
     @staticmethod
     def clear_right_bracket(enviroment, text):
         regex_pattern = "(\\\\" + enviroment + "\\{.{0,}?)([^\\p{L}0-9\\.])(\\})"
         return regex.sub(regex_pattern, "\\1\\3\\2", text, count=1)
+
+
+class BibFileCleaner:
+    fields_to_remove = [
+        'month =',
+        'file =',
+        'abstract =',
+        'copyright =',
+        'language =',
+        'isbn =',
+        'issn =',
+        'keywords =',
+    ]
+
+    def __init__(self):
+        self.cleaned_content = []
+
+    def clean_bib_content(self, bib_content):
+        for line in bib_content:
+            if not any(field in line for field in self.fields_to_remove):
+                self.cleaned_content.append(line)
+        return self.cleaned_content
+
+    @staticmethod
+    def read_bib_file(file_path):
+        with open(file_path, 'r') as file:
+            return file.readlines()
+
+    @staticmethod
+    def write_bib_file(file_path, cleaned_content):
+        with open(file_path, 'w') as file:
+            file.writelines(cleaned_content)
+
+# Example usage:
+# file_path = 'path_to_your.bib'
+# bib_content = BibFileCleaner.read_bib_file(file_path)
+
+# cleaner = BibFileCleaner(bib_content)
+# cleaned_content = cleaner.clean_bib_content()
+
+# BibFileCleaner.write_bib_file(file_path, cleaned_content)
