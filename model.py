@@ -127,7 +127,6 @@ class BibFinder:
     def de_nullifier(str):
         return str if str else ""
 
-
     @staticmethod
     def add_space(str, index):
         return " " if index < len(str) and str[index].isalpha() else ""
@@ -177,3 +176,21 @@ class BibParser:
                     entry.author = entry.title
                 list_bib_entries.append(entry)
         return list_bib_entries
+
+
+class SanityCheck:
+    def __init__(self):
+        self.updated_content = []
+
+    def check_and_update_content(self, tex_content):
+        i = 0
+        while i < len(tex_content):
+            line = tex_content[i]
+            self.updated_content.append(line)
+            if line.startswith("%\\label{ref"):
+                if i + 1 < len(tex_content) and not tex_content[i + 1].startswith("\\parencite"):
+                    self.updated_content.append("%NOTABENE!!!")
+                    self.updated_content.append("\\parencite[][]{}")
+            i += 1
+
+        return self.updated_content
