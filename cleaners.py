@@ -51,6 +51,7 @@ class DummyCharactersCleaner:
             s = regex.sub("(\\\\[sub]{0,}section)(\\[.{1,}\\])?\\{(\\s?\\d\\.\\s)?(.{1,})\\}", "\\1\\{\\4\\}", s)
             s = regex.sub("(\\s)([\\.,?!;]{1}|'')(\\s)", "\\2\\3", s)
             s = regex.sub("(,,)(\\s)", "\\1", s)
+
             s = DummyCharactersCleaner.clear_left_bracket("textit", s)
             s = DummyCharactersCleaner.clear_right_bracket("textit", s)
             s = DummyCharactersCleaner.clear_left_bracket("textbf", s)
@@ -61,6 +62,11 @@ class DummyCharactersCleaner:
             s = s.replace("\\textbf{}", "")
             s = s.replace("\\textit{}", "")
             s = s.replace("\\footnote{ ", "\\footnote{")
+
+            s = regex.sub(r"(\\(?:sub)*section\{)(.*?)\\(\})", r"\1\2}",
+                          regex.sub(r"(\\(?:sub)*section)\\(\{)", r"\1\2", s))
+            s = regex.sub(r"(\\(?:sub)*section\{)(?:\d+(?:\.\d+)*\.?\s*)?(.*?)\}", r"\1\2}", s)
+
             tex_lines[i] = s
 
     @staticmethod
