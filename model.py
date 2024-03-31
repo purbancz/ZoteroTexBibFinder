@@ -28,53 +28,121 @@ class BibFinder:
         self.tex_bib_lines = []
         self.regex = r"(\\label\{ref:RND[a-zA-Z0-9]{10}\})(\()([^\)]{4,})(\))([.,:;?!])?"
 
+    # def find_bib_references(self, tex_lines, bib_entries):
+    #     for i in range(len(tex_lines)):
+    #         prev_line = ""
+    #         par = tex_lines[i]
+    #         matcher = re.finditer(self.regex, par)
+    #         temporary_matcher_end = 0
+    #         matches = [match for match in matcher]
+    #         if not matches:
+    #             self.tex_bib_lines.append(par)
+    #         else:
+    #             for match in matches:
+    #                 try:
+    #                     prev_line = par[0:match.start() - 1]
+    #                 except Exception as e:
+    #                     print(f"Something went wrong: {e} + {prev_line}{par}")
+    #                 self.tex_bib_lines.append(prev_line)
+    #                 self.tex_bib_lines.append("%" + match.group())
+    #                 try:
+    #                     self.tex_bib_lines.append(
+    #                         self.create_bib_entry(match.group(3), self.last_word(prev_line), bib_entries)
+    #                         + self.de_nullifier(match.group(5))
+    #                         + self.add_space(par, match.end())
+    #                         + "%")
+    #                 except Exception as e:
+    #                     print(f"Something went wrong: {e} + {prev_line}")
+    #                 temporary_matcher_end = match.end()
+    #             self.tex_bib_lines.append(par[temporary_matcher_end:len(par)])
+    #     return self.tex_bib_lines
+
     def find_bib_references(self, tex_lines, bib_entries):
-        for i in range(len(tex_lines)):
-            prev_line = ""
-            par = tex_lines[i]
-            matcher = re.finditer(self.regex, par)
-            temporary_matcher_end = 0
-            matches = [match for match in matcher]
-            if not matches:
-                self.tex_bib_lines.append(par)
-            else:
+        self.tex_bib_lines = []
+        for par in tex_lines:
+            modified_line = par
+            matches = list(re.finditer(self.regex, par))
+            if matches:
                 for match in matches:
-                    try:
-                        prev_line = par[0:match.start() - 1]
-                    except Exception as e:
-                        print(f"Something went wrong: {e} + {prev_line}{par}")
-                    self.tex_bib_lines.append(prev_line)
-                    self.tex_bib_lines.append("%" + match.group())
-                    try:
-                        self.tex_bib_lines.append(
-                            self.create_bib_entry(match.group(3), self.last_word(prev_line), bib_entries)
-                            + self.de_nullifier(match.group(5))
-                            + self.add_space(par, match.end())
-                            + "%")
-                    except Exception as e:
-                        print(f"Something went wrong: {e} + {prev_line}")
-                    temporary_matcher_end = match.end()
-                self.tex_bib_lines.append(par[temporary_matcher_end:len(par)])
+                    modified_part = "\n%" + match.group() + "\n" + self.create_bib_entry(match.group(3), self.last_word(
+                        par[:match.start()]), bib_entries) + self.de_nullifier(match.group(5)) + self.add_space(par,
+                                                                                                                match.end()) + "%\n"
+                    modified_line = modified_line.replace(match.group(), modified_part)
+                self.tex_bib_lines.append(modified_line + "\n")
+            else:
+                self.tex_bib_lines.append(par + "\n")
         return self.tex_bib_lines
+
+    # def create_bib_entry(self, bib_entry_raw, one_word_before, bib_entries):
+    #     bib_refs = []
+    #     many_in_one_year = 0
+    #     bib_references_text = bib_entry_raw.split("; ")
+    #     bib_tex_formula = ""
+    #     author = ""
+    #     year = ""
+    #     bib_ref = None
+    #     if len(bib_references_text) == 1:
+    #         bib_tex_formula = "\\parencite"
+    #     else:
+    #         bib_tex_formula = "\\parencites"
+    #     for i in range(len(bib_references_text)):
+    #         a_bc_entries = set()
+    #         author = ""
+    #         year = ""
+    #         bib_ref = BibReferences("", "", "")
+    #         bib_single_text_entry = bib_references_text[i].split(", ")
+    #         for subs in bib_single_text_entry:
+    #             if subs[0].isdigit():
+    #                 year = subs.split(" ")[0]
+    #             if subs[0].islower():
+    #                 if year:
+    #                     bib_ref.suffix = subs
+    #                 else:
+    #                     bib_ref.prefix = bib_ref.prefix + subs[0:self.first_upper_case(subs) - 1]
+    #                     if author:
+    #                         author = author + ", "
+    #                     author = author + subs[self.first_upper_case(subs):].replace("[\\p{M}]", "")
+    #             if subs[0].isupper():
+    #                 if author:
+    #                     author = author + ", "
+    #                 author = author + subs
+    #         if not author:
+    #             bib_tex_formula = bib_tex_formula + "*"
+    #             author = one_word_before
+    #         if len(year) > 4 and year[4].isalpha():
+    #             many_in_one_year = ord(year[4]) - 97
+    #             year = year[0:len(year) - 1]
+    #         while not a_bc_entries and len(author) > 0:
+    #             for bib_entry in bib_entries:
+    #                 if self.are_authors(author.split(", "), bib_entry.author) and bib_entry.year == year:
+    #                     a_bc_entries.add(bib_entry)
+    #             author = author[0:len(author) - 1]
+    #         sorted_abc_list = sorted(list(a_bc_entries), key=lambda x: x.title)
+    #         if not sorted_abc_list:
+    #             bib_ref.key = ""
+    #         else:
+    #             bib_ref.key = sorted_abc_list[many_in_one_year].key
+    #             many_in_one_year = 0
+    #         bib_refs.append(bib_ref)
+    #     for bib_final_ref in bib_refs:
+    #         bib_tex_formula = bib_tex_formula + str(bib_final_ref)
+    #     return bib_tex_formula
 
     def create_bib_entry(self, bib_entry_raw, one_word_before, bib_entries):
         bib_refs = []
         many_in_one_year = 0
         bib_references_text = bib_entry_raw.split("; ")
-        bib_tex_formula = ""
-        author = ""
-        year = ""
-        bib_ref = None
-        if len(bib_references_text) == 1:
-            bib_tex_formula = "\\parencite"
-        else:
-            bib_tex_formula = "\\parencites"
+        bib_tex_formula = "\\parencite" if len(bib_references_text) == 1 else "\\parencites"
+
+        previous_author = None  # Keep track of the most recently analyzed author name.
+
         for i in range(len(bib_references_text)):
             a_bc_entries = set()
             author = ""
             year = ""
             bib_ref = BibReferences("", "", "")
             bib_single_text_entry = bib_references_text[i].split(", ")
+
             for subs in bib_single_text_entry:
                 if subs[0].isdigit():
                     year = subs.split(" ")[0]
@@ -90,26 +158,39 @@ class BibFinder:
                     if author:
                         author = author + ", "
                     author = author + subs
-            if not author:
-                bib_tex_formula = bib_tex_formula + "*"
+
+            if not author and previous_author:  # If no new author specified, use the most recent one.
+                author = previous_author
+            elif author:
+                previous_author = author  # Update previous_author for the next iteration.
+            else:
+                # Only use one_word_before if no author names have been found in the entire sequence.
                 author = one_word_before
+                bib_tex_formula += "*"
+
             if len(year) > 4 and year[4].isalpha():
                 many_in_one_year = ord(year[4]) - 97
                 year = year[0:len(year) - 1]
+
             while not a_bc_entries and len(author) > 0:
                 for bib_entry in bib_entries:
                     if self.are_authors(author.split(", "), bib_entry.author) and bib_entry.year == year:
                         a_bc_entries.add(bib_entry)
                 author = author[0:len(author) - 1]
+
             sorted_abc_list = sorted(list(a_bc_entries), key=lambda x: x.title)
             if not sorted_abc_list:
                 bib_ref.key = ""
             else:
+                many_in_one_year = min(many_in_one_year, len(sorted_abc_list) - 1)
                 bib_ref.key = sorted_abc_list[many_in_one_year].key
                 many_in_one_year = 0
+
             bib_refs.append(bib_ref)
+
         for bib_final_ref in bib_refs:
-            bib_tex_formula = bib_tex_formula + str(bib_final_ref)
+            bib_tex_formula += str(bib_final_ref)
+
         return bib_tex_formula
 
     @staticmethod
@@ -127,9 +208,13 @@ class BibFinder:
     def de_nullifier(str):
         return str if str else ""
 
+    # @staticmethod
+    # def add_space(str, index):
+    #     return " " if index < len(str) and str[index].isalpha() else ""
+
     @staticmethod
     def add_space(str, index):
-        return " " if index < len(str) and str[index].isalpha() else ""
+        return " " if index < len(str) and str[index] == " " else ""
 
     @staticmethod
     def are_authors(authors1, authors2):
