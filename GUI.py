@@ -1,11 +1,10 @@
-from PySimpleGUI import Window, Input, FileBrowse, FolderBrowse, Button, WINDOW_CLOSED, Text
+from PySimpleGUI import Window, Input, FileBrowse, Button, WINDOW_CLOSED, Text, FileSaveAs
 
 layout = [
     [Text('Select your .tex file:'), Input(), FileBrowse()],
     [Text('Select your .bib file:'), Input(), FileBrowse()],
-    [Text('Select a folder to save the output file:'), Input(), FolderBrowse()],
-    [Text('Enter the output .tex file name:'), Input()],
-    [Text('Enter the output .bib file name:'), Input()],
+    [Text('Select the output .tex file:'), Input(), FileSaveAs("Save As", file_types=(("TeX Files", "*.tex"),))],
+    [Text('Select the output .bib file:'), Input(), FileSaveAs("Save As", file_types=(("BibTeX Files", "*.bib"),))],
     [Button('Submit'), Button('Cancel')]
 ]
 
@@ -18,12 +17,12 @@ def create_gui(main_function):
         if event == 'Submit':
             tex_file = values[0]
             bib_file = values[1]
-            output_folder = values[2]
-            output_file_name = values[3]
-            output_bib_file_name = values[4]
-            new_tex_file = output_folder + '/' + output_file_name
-            output_bib_file_name = output_folder + '/' + output_bib_file_name
-            main_function(tex_file, bib_file, new_tex_file, output_bib_file_name)
+            output_tex_file = values[2]
+            output_bib_file = values[3]
+            if tex_file and bib_file and output_tex_file and output_bib_file:
+                main_function(tex_file, bib_file, output_tex_file, output_bib_file)
+            else:
+                print("Please make sure all files are selected.")
         if event == WINDOW_CLOSED or event == 'Cancel':
             break
 
