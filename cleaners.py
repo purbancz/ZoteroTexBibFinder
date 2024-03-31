@@ -13,7 +13,9 @@ class DummyLinesCleaner:
                     or line.startswith("\\renewcommand") or line.startswith("\\setlength") or line.startswith(
                         "\\hypersetup")
                     or line.startswith("\\makeatletter") or line.startswith("\\makeatother")
-                    or line.startswith("%") or line.startswith("\\providecommand")):
+                    or line.startswith("%") or line.startswith("\\providecommand") or line.startswith("\\liststyle")
+                    or line.startswith("\\pagestyle")
+            ):
                 continue
             if line.startswith("{") and left_bracket > right_bracket:
                 continue
