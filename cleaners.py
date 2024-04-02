@@ -49,77 +49,86 @@ class DummyCharactersCleaner:
             s = regex.sub("(\\s)([a-zA-Z])\\s", "\\1\\2~", s)
             s = regex.sub("(\\{)([a-zA-Z])\\s", "\\1\\2~", s)
             s = regex.sub("^([a-zA-Z])\\s", "\\1~", s)
-            s = regex.sub("\\\\[a-zA-Z]{1,}\\{\\s?\\}", "", s)
-            s = regex.sub("(\\\\[sub]{0,}section)(\\[.{1,}\\])?\\{(\\s?\\d\\.\\s)?(.{1,})\\}", "\\1\\{\\4\\}", s)
+
+            s = regex.sub("(\\\\[sub]{0,}section)(\\[.{1,}\\])?\\{(\\s?\\d\\.\\s)?(.{1,})\\}", "\\1{\\4}", s)
             s = regex.sub("(\\s)([\\.,?!;]{1}|'')(\\s)", "\\2\\3", s)
             s = regex.sub("(,,)(\\s)", "\\1", s)
 
-            s = DummyCharactersCleaner.clear_left_bracket("textit", s)
-            s = DummyCharactersCleaner.clear_right_bracket("textit", s)
-            s = DummyCharactersCleaner.clear_left_bracket("textbf", s)
-            s = DummyCharactersCleaner.clear_right_bracket("textbf", s)
             s = regex.sub(" +", " ", s.strip())
             s = s.replace("\\textbf{ }", " ")
             s = s.replace("\\textit{ }", " ")
             s = s.replace("\\textbf{}", "")
             s = s.replace("\\textit{}", "")
+
+            s = DummyCharactersCleaner.clear_left_bracket("textit", s)
+            s = DummyCharactersCleaner.clear_right_bracket("textit", s)
+            s = DummyCharactersCleaner.clear_left_bracket("textbf", s)
+            s = DummyCharactersCleaner.clear_right_bracket("textbf", s)
+
+            s = regex.sub("\\\\[a-zA-Z]{1,}\\{\\s?\\}", "", s)
+
             s = s.replace("\\footnote{ ", "\\footnote{")
 
-            s = regex.sub(r"(\\(?:sub)*section\{)(.*?)\\(\})", r"\1\2}",
-                          regex.sub(r"(\\(?:sub)*section)\\(\{)", r"\1\2", s))
+            # s = regex.sub(r"(\\(?:sub)*section\{)(.*?)\\(\})", r"\1\2}",
+            #               regex.sub(r"(\\(?:sub)*section)\\(\{)", r"\1\2", s))
             s = regex.sub(r"(\\(?:sub)*section\{)(?:\d+(?:\.\d+)*\.?\s*)?(.*?)\}", r"\1\2}", s)
+
+            s = s.replace("~ ", "~")
 
             tex_lines[i] = s
 
-    @staticmethod
-    def clear_left_bracket(enviroment, text):
-        regex_pattern = "(\\\\" + enviroment + "\\{)([^\\p{L}\\\\])"
-        while regex.search(regex_pattern, text):
-            text = regex.sub(regex_pattern, "\\2\\1", text, count=1)
-        return text
+    # @staticmethod
+    # def clear_left_bracket(enviroment, text):
+    #     regex_pattern = "(\\\\" + enviroment + "\\{)([^\\p{L}\\\\])"
+    #     while regex.search(regex_pattern, text):
+    #         text = regex.sub(regex_pattern, "\\2\\1", text, count=1)
+    #     return text
 
     @staticmethod
-    def clear_right_bracket(enviroment, text):
-        regex_pattern = "(\\\\" + enviroment + "\\{.{0,}?)([^\\p{L}0-9\\.])(\\})"
-        return regex.sub(regex_pattern, "\\1\\3\\2", text, count=1)
+    def clear_left_bracket(environment, text):
+        regex_pattern = r"(\\" + regex.escape(environment) + r"\{)(\s*)"
+        text = regex.sub(regex_pattern, r"\2\1", text)
+        return text
+
+    # @staticmethod
+    # def clear_right_bracket(enviroment, text):
+    #     regex_pattern = "(\\\\" + enviroment + "\\{.{0,}?)([^\\p{L}0-9\\.])(\\})"
+    #     return regex.sub(regex_pattern, "\\1\\3\\2", text, count=1)
+
+    @staticmethod
+    def clear_right_bracket(environment, text):
+        regex_pattern = r"(\\{env}\{{[^}}]*?)(~|\s*)(\}}+)".format(env=environment)
+        text = regex.sub(regex_pattern, r"\1\3\2", text)
+        return text
 
 
 class BibFileCleaner:
     fields_to_remove = [
-        'month =',
-        'file =',
-        'abstract =',
-        'copyright =',
-        'language =',
-        'isbn =',
-        'issn =',
-        'keywords =',
+        'month',
+        'file',
+        'abstract',
+        'copyright',
+        'language',
+        'isbn',
+        'issn',
+        'keywords',
     ]
 
     def __init__(self):
         self.cleaned_content = []
 
     def clean_bib_content(self, bib_content):
+        inside_removed_field = False
         for line in bib_content:
-            if not any(field in line for field in self.fields_to_remove):
+            if any(line.strip().startswith(field) for field in self.fields_to_remove):
+                inside_removed_field = True
+
+            if inside_removed_field and (
+                    line.strip().endswith('},') or line.strip().endswith('}') or line.strip().endswith(',')):
+                inside_removed_field = False
+                continue
+
+            if not inside_removed_field:
                 self.cleaned_content.append(line)
+
         return self.cleaned_content
-
-    @staticmethod
-    def read_bib_file(file_path):
-        with open(file_path, 'r') as file:
-            return file.readlines()
-
-    @staticmethod
-    def write_bib_file(file_path, cleaned_content):
-        with open(file_path, 'w') as file:
-            file.writelines(cleaned_content)
-
-# Example usage:
-# file_path = 'path_to_your.bib'
-# bib_content = BibFileCleaner.read_bib_file(file_path)
-
-# cleaner = BibFileCleaner(bib_content)
-# cleaned_content = cleaner.clean_bib_content()
-
-# BibFileCleaner.write_bib_file(file_path, cleaned_content)
