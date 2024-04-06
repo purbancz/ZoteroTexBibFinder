@@ -118,7 +118,13 @@ class BibFinder:
 
     @staticmethod
     def last_word(str):
-        return str.split()[-1] if str else ""
+        if str:
+            if str.split()[-1] == "al." or str.split()[-2] == "and":
+                return str.split()[-3]
+            else:
+                return str.split()[-1]
+        else:
+            return ""
 
     @staticmethod
     def de_nullifier(str):
