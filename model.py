@@ -61,12 +61,12 @@ class BibFinder:
 
             for subs in bib_single_text_entry:
                 if subs[0].isdigit():
-                    year = subs.split(" ")[0]
+                    year = subs.split()[0]
                 if subs[0].islower():
                     if year:
                         bib_ref.suffix = subs
                     else:
-                        bib_ref.prefix = bib_ref.prefix + subs[0:self.first_upper_case(subs) - 1]
+                        bib_ref.prefix += self.pref_resolve(subs)
                         if author:
                             author = author + ", "
                         author = author + subs[self.first_upper_case(subs):].replace("[\\p{M}]", "")
@@ -75,13 +75,18 @@ class BibFinder:
                         author = author + ", "
                     author = author + subs
 
+            if bib_ref.prefix.endswith(" "):
+                bib_ref.prefix = bib_ref.prefix[:-1]
+
             if not author and previous_author:
                 author = previous_author
             elif author:
                 previous_author = author
             else:
                 author = one_word_before
-                if bib_tex_formula[-1] != "*":
+                if bib_tex_formula.endswith("*"):
+                    pass
+                elif previous_author is None:
                     bib_tex_formula += "*"
 
             if len(year) > 4 and year[4].isalpha():
@@ -116,15 +121,31 @@ class BibFinder:
                 return i
         return 0
 
-    @staticmethod
-    def last_word(str):
-        if str:
-            if str.split()[-1] == "al." or str.split()[-2] == "and":
-                return str.split()[-3]
-            else:
-                return str.split()[-1]
+    def pref_resolve(self, pref_candidate):
+        if self.first_upper_case(pref_candidate) > 0:
+            return pref_candidate[0:self.first_upper_case(pref_candidate) - 1]
         else:
-            return ""
+            return pref_candidate + ", "
+
+            # @staticmethod
+
+    # def last_word(str):
+    #     if str:
+    #         if str.split()[-1] == "al." or str.split()[-2] == "and":
+    #             return str.split()[-3]
+    #         else:
+    #             return str.split()[-1]
+    #     else:
+    #         return ""
+
+    @staticmethod
+    def last_word(text):
+        words = text.split()
+
+        if len(words) >= 2 and (words[-1] == "al." or words[-1] == "al.," or words[-2] == "and"):
+            return words[-3]
+        else:
+            return words[-1] if words else ""
 
     @staticmethod
     def de_nullifier(str):
