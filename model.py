@@ -129,15 +129,6 @@ class BibFinder:
 
             # @staticmethod
 
-    # def last_word(str):
-    #     if str:
-    #         if str.split()[-1] == "al." or str.split()[-2] == "and":
-    #             return str.split()[-3]
-    #         else:
-    #             return str.split()[-1]
-    #     else:
-    #         return ""
-
     @staticmethod
     def last_word(text):
         words = text.split()

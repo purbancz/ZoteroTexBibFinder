@@ -59,6 +59,9 @@ class DummyCharactersCleaner:
             s = regex.sub("(\\s)([\\.,?!;]{1}|'')(\\s)", "\\2\\3", s)
             s = regex.sub("(,,)(\\s)", "\\1", s)
 
+            # c
+            s = regex.sub(r"\b(\d+)(st|nd|rd|th)\b", r"\1\\textsuperscript{\2}", s)
+
             s = regex.sub(" +", " ", s.strip())
             s = s.replace("\\textbf{ }", " ")
             s = s.replace("\\textit{ }", " ")
