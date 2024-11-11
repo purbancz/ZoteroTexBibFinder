@@ -120,6 +120,7 @@ class BibFileCleaner:
         'isbn',
         'issn',
         'keywords',
+        'date',
     ]
 
     def __init__(self):
@@ -137,6 +138,7 @@ class BibFileCleaner:
                 continue
 
             if not inside_removed_field:
+                line = regex.sub(r'(\b\w+)=([0-9]+)', r'\1={\2}', line)
                 self.cleaned_content.append(line)
 
         return self.cleaned_content
