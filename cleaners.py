@@ -143,12 +143,31 @@ class BibFileCleaner:
 
         return line
 
+    def escape_latex_symbols(self, line):
+        """Escape LaTeX-specific symbols in text."""
+        replacements = {
+            "&": r"\&",
+            "%": r"\%",
+            "#": r"\#",
+            # "_": r"\_",
+            # "~": r"\textasciitilde",
+            # "^": r"\textasciicircum"
+        }
+
+        for symbol, replacement in replacements.items():
+            line = regex.sub(r'(?<!\\)' + regex.escape(symbol), replacement, line)
+
+        if line.count('$') % 2 != 0:
+            line = regex.sub(r'(?<!\\)\$', r'\$', line)
+
+        return line
+
     def clean_bib_content(self, bib_content):
         inside_removed_field = False
         for line in bib_content:
             if line.strip().startswith('@'):
                 line = self.normalize_key(line)
-            
+
             if any(line.strip().startswith(field) for field in self.fields_to_remove):
                 inside_removed_field = True
 
@@ -159,6 +178,7 @@ class BibFileCleaner:
 
             if not inside_removed_field:
                 line = regex.sub(r'(\b\w+)=([0-9]+)', r'\1={\2}', line)
+                line = self.escape_latex_symbols(line)
                 self.cleaned_content.append(line)
 
         return self.cleaned_content
