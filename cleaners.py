@@ -147,7 +147,8 @@ class BibFileCleaner:
         """Escape LaTeX-specific symbols in text."""
         replacements = {
             "&": r"\&",
-            # I've excluded some potentially ill-behaving symbols for the reasons listed below:
+            # I've excluded some potentially ill-behaving symbols for the reasons listed below.
+            # Note the dollar sign treated separately
             # "%": r"\%", # might occur in urls
             # "#": r"\#", # not sure about it
             # "_": r"\_", # might occur in entry key
@@ -162,6 +163,9 @@ class BibFileCleaner:
             line = regex.sub(r'(?<!\\)\$', r'\$', line)
 
         return line
+
+    def wrap_numeric_values(self, line):
+        return regex.sub(r'(\b\w+)=([0-9]+)', r'\1={\2}', line)
 
     def clean_bib_content(self, bib_content):
         inside_removed_field = False
@@ -178,7 +182,7 @@ class BibFileCleaner:
                 continue
 
             if not inside_removed_field:
-                line = regex.sub(r'(\b\w+)=([0-9]+)', r'\1={\2}', line)
+                line = self.wrap_numeric_values(line)
                 line = self.escape_latex_symbols(line)
                 self.cleaned_content.append(line)
 
