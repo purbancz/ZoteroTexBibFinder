@@ -51,6 +51,7 @@ class DummyCharactersCleaner:
             s = regex.sub(r"\\textcolor\{[^}]*\}\{([^}]*)\}", r"\1", s)
             s = regex.sub(r"\\textrm\{([^}]*)\}", r"\1", s)
             s = regex.sub(r"\\textstyleDomylnaczcionkaakapitu\{([^}]*)\}", r"\1", s)
+            s = regex.sub(r"\\textstyleDomylnaczcionkaakapitui\{([^}]*)\}", r"\1", s)
 
             s = regex.sub("(\\s)([a-zA-Z])\\s", "\\1\\2~", s)
             s = regex.sub("(\\{)([a-zA-Z])\\s", "\\1\\2~", s)
