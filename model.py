@@ -127,8 +127,6 @@ class BibFinder:
         else:
             return pref_candidate + ", "
 
-            # @staticmethod
-
     @staticmethod
     def last_word(text):
         words = text.split()

@@ -1,4 +1,5 @@
 import regex
+import unicodedata
 
 
 class DummyLinesCleaner:
@@ -121,14 +122,33 @@ class BibFileCleaner:
         'issn',
         'keywords',
         'date',
+        'day',
     ]
 
     def __init__(self):
         self.cleaned_content = []
 
+    def normalize_key(self, line):
+        """Normalize the BibTeX entry key by removing non-ASCII characters."""
+        match = regex.match(r'(@\w+{)([^,]+)', line)
+        if match:
+            entry_type = match.group(1)
+            original_key = match.group(2)
+
+            normalized_key = unicodedata.normalize('NFD', original_key)
+            normalized_key = normalized_key.encode('ascii', 'ignore').decode('utf-8')
+            normalized_key = regex.sub(r'[^\w]', '', normalized_key)
+
+            line = entry_type + normalized_key + line[len(entry_type) + len(original_key):]
+
+        return line
+
     def clean_bib_content(self, bib_content):
         inside_removed_field = False
         for line in bib_content:
+            if line.strip().startswith('@'):
+                line = self.normalize_key(line)
+            
             if any(line.strip().startswith(field) for field in self.fields_to_remove):
                 inside_removed_field = True
 
