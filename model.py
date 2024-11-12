@@ -151,13 +151,16 @@ class BibFinder:
 
 class BibParser:
     @staticmethod
-    def parse_bib_file(path_to_file):
+    def parse_bib_file(path_to_file=None, lines=None):
         list_bib_entries = []
         last_entry_start_line = 0
-        with open(path_to_file, 'r', encoding="utf-8") as file:
-            bib_lines = file.readlines()
-        for i in range(len(bib_lines)):
-            line = bib_lines[i].strip()
+
+        if lines is None:
+            with open(path_to_file, 'r', encoding="utf-8") as file:
+                lines = file.readlines()
+
+        for i in range(len(lines)):
+            line = lines[i].strip()
             if line.startswith("@"):
                 key_line = line.split("{", 1)
                 last_entry_start_line = i
@@ -179,7 +182,7 @@ class BibParser:
             if line == "}":
                 if not entry.author:
                     for y in range(i, last_entry_start_line, -1):
-                        line = bib_lines[y].strip()
+                        line = lines[y].strip()
                         if line.startswith("editor"):
                             key_author = line.split("{", 1)
                             if len(key_author) > 1:
