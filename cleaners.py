@@ -147,11 +147,12 @@ class BibFileCleaner:
         """Escape LaTeX-specific symbols in text."""
         replacements = {
             "&": r"\&",
-            "%": r"\%",
-            "#": r"\#",
-            # "_": r"\_",
-            # "~": r"\textasciitilde",
-            # "^": r"\textasciicircum"
+            # I've excluded some potentially ill-behaving symbols for the reasons listed below:
+            # "%": r"\%", # might occur in urls
+            # "#": r"\#", # not sure about it
+            # "_": r"\_", # might occur in entry key
+            # "~": r"\textasciitilde", # might be on purpose (non breaking space)
+            # "^": r"\textasciicircum" # rather rare and easy to spot, re.sub would potentially mess the entry
         }
 
         for symbol, replacement in replacements.items():
