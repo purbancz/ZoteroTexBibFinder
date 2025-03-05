@@ -1,2 +1,1 @@
 regex
-PySimpleGUI~=4.60.3
